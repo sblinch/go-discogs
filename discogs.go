@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -23,8 +24,10 @@ type Options struct {
 	UserAgent string
 	// Token provided by discogs (optional).
 	Token string
-	// Optional HTTP client instance to use for HTTP requests
+	// HTTP client instance to use for HTTP requests
 	Client *http.Client
+	// Rate limit instance to track request rates
+	RateLimit *RateLimit
 }
 
 // Discogs is an interface for making Discogs API requests.
@@ -73,7 +76,7 @@ func New(o *Options) (Discogs, error) {
 		client = &http.Client{}
 	}
 	req := func(ctx context.Context, path string, params url.Values, resp interface{}) error {
-		return request(ctx, client, header, path, params, resp)
+		return request(ctx, client, header, o.RateLimit, path, params, resp)
 	}
 
 	return discogs{
@@ -98,7 +101,7 @@ func currency(c string) (string, error) {
 	}
 }
 
-func request(ctx context.Context, client *http.Client, header *http.Header, path string, params url.Values, resp interface{}) error {
+func request(ctx context.Context, client *http.Client, header *http.Header, rl *RateLimit, path string, params url.Values, resp interface{}) error {
 	r, err := http.NewRequestWithContext(ctx, "GET", path+"?"+params.Encode(), nil)
 	if err != nil {
 		return err
@@ -110,6 +113,13 @@ func request(ctx context.Context, client *http.Client, header *http.Header, path
 		return err
 	}
 	defer response.Body.Close()
+
+	if rl != nil {
+		total, _ := strconv.Atoi(response.Header.Get("X-Discogs-Ratelimit"))               // The total number of requests you can make in a one minute window.
+		used, _ := strconv.Atoi(response.Header.Get("X-Discogs-Ratelimit-Used"))           // The number of requests you’ve made in your existing rate limit window.
+		remaining, _ := strconv.Atoi(response.Header.Get("X-Discogs-Ratelimit-Remaining")) // The number of remaining requests you are able to make in the existing rate limit window.
+		rl.Update(total, used, remaining)
+	}
 
 	if response.StatusCode != http.StatusOK {
 		switch response.StatusCode {
