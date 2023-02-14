@@ -23,6 +23,8 @@ type Options struct {
 	UserAgent string
 	// Token provided by discogs (optional).
 	Token string
+	// Optional HTTP client instance to use for HTTP requests
+	Client *http.Client
 }
 
 // Discogs is an interface for making Discogs API requests.
@@ -66,8 +68,12 @@ func New(o *Options) (Discogs, error) {
 		o.URL = discogsAPI
 	}
 
+	client := o.Client
+	if client == nil {
+		client = &http.Client{}
+	}
 	req := func(ctx context.Context, path string, params url.Values, resp interface{}) error {
-		return request(ctx, header, path, params, resp)
+		return request(ctx, client, header, path, params, resp)
 	}
 
 	return discogs{
@@ -92,14 +98,13 @@ func currency(c string) (string, error) {
 	}
 }
 
-func request(ctx context.Context, header *http.Header, path string, params url.Values, resp interface{}) error {
+func request(ctx context.Context, client *http.Client, header *http.Header, path string, params url.Values, resp interface{}) error {
 	r, err := http.NewRequestWithContext(ctx, "GET", path+"?"+params.Encode(), nil)
 	if err != nil {
 		return err
 	}
 	r.Header = *header
 
-	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
 		return err
