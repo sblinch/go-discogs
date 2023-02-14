@@ -34,12 +34,14 @@ type DatabaseService interface {
 }
 
 type databaseService struct {
+	request  requestFunc
 	url      string
 	currency string
 }
 
-func newDatabaseService(url string, currency string) DatabaseService {
+func newDatabaseService(req requestFunc, url string, currency string) DatabaseService {
 	return &databaseService{
+		request:  req,
 		url:      url,
 		currency: currency,
 	}
@@ -88,7 +90,7 @@ func (s *databaseService) Release(ctx context.Context, releaseID int) (*Release,
 	params.Set("curr_abbr", s.currency)
 
 	var release *Release
-	err := request(ctx, s.url+releasesURI+strconv.Itoa(releaseID), params, &release)
+	err := s.request(ctx, s.url+releasesURI+strconv.Itoa(releaseID), params, &release)
 	return release, err
 }
 
@@ -100,7 +102,7 @@ type ReleaseRating struct {
 
 func (s *databaseService) ReleaseRating(ctx context.Context, releaseID int) (*ReleaseRating, error) {
 	var rating *ReleaseRating
-	err := request(ctx, s.url+releasesURI+strconv.Itoa(releaseID)+"/rating", nil, &rating)
+	err := s.request(ctx, s.url+releasesURI+strconv.Itoa(releaseID)+"/rating", nil, &rating)
 	return rating, err
 }
 
@@ -126,7 +128,7 @@ type Artist struct {
 
 func (s *databaseService) Artist(ctx context.Context, artistID int) (*Artist, error) {
 	var artist *Artist
-	err := request(ctx, s.url+artistsURI+strconv.Itoa(artistID), nil, &artist)
+	err := s.request(ctx, s.url+artistsURI+strconv.Itoa(artistID), nil, &artist)
 	return artist, err
 }
 
@@ -138,7 +140,7 @@ type ArtistReleases struct {
 
 func (s *databaseService) ArtistReleases(ctx context.Context, artistID int, pagination *Pagination) (*ArtistReleases, error) {
 	var releases *ArtistReleases
-	err := request(ctx, s.url+artistsURI+strconv.Itoa(artistID)+"/releases", pagination.params(), &releases)
+	err := s.request(ctx, s.url+artistsURI+strconv.Itoa(artistID)+"/releases", pagination.params(), &releases)
 	return releases, err
 }
 
@@ -160,7 +162,7 @@ type Label struct {
 
 func (s *databaseService) Label(ctx context.Context, labelID int) (*Label, error) {
 	var label *Label
-	err := request(ctx, s.url+labelsURI+strconv.Itoa(labelID), nil, &label)
+	err := s.request(ctx, s.url+labelsURI+strconv.Itoa(labelID), nil, &label)
 	return label, err
 }
 
@@ -172,7 +174,7 @@ type LabelReleases struct {
 
 func (s *databaseService) LabelReleases(ctx context.Context, labelID int, pagination *Pagination) (*LabelReleases, error) {
 	var releases *LabelReleases
-	err := request(ctx, s.url+labelsURI+strconv.Itoa(labelID)+"/releases", pagination.params(), &releases)
+	err := s.request(ctx, s.url+labelsURI+strconv.Itoa(labelID)+"/releases", pagination.params(), &releases)
 	return releases, err
 }
 
@@ -204,7 +206,7 @@ type Master struct {
 
 func (s *databaseService) Master(ctx context.Context, masterID int) (*Master, error) {
 	var master *Master
-	err := request(ctx, s.url+mastersURI+strconv.Itoa(masterID), nil, &master)
+	err := s.request(ctx, s.url+mastersURI+strconv.Itoa(masterID), nil, &master)
 	return master, err
 }
 
@@ -216,6 +218,6 @@ type MasterVersions struct {
 
 func (s *databaseService) MasterVersions(ctx context.Context, masterID int, pagination *Pagination) (*MasterVersions, error) {
 	var versions *MasterVersions
-	err := request(ctx, s.url+mastersURI+strconv.Itoa(masterID)+"/versions", pagination.params(), &versions)
+	err := s.request(ctx, s.url+mastersURI+strconv.Itoa(masterID)+"/versions", pagination.params(), &versions)
 	return versions, err
 }

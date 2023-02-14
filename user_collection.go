@@ -21,12 +21,14 @@ type CollectionService interface {
 }
 
 type collectionService struct {
-	url string
+	request requestFunc
+	url     string
 }
 
-func newCollectionService(url string) CollectionService {
+func newCollectionService(req requestFunc, url string) CollectionService {
 	return &collectionService{
-		url: url,
+		request: req,
+		url:     url,
 	}
 }
 
@@ -43,7 +45,7 @@ func (s *collectionService) Folder(ctx context.Context, username string, folderI
 		return nil, ErrInvalidUsername
 	}
 	var folder *Folder
-	err := request(ctx, s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID), nil, &folder)
+	err := s.request(ctx, s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID), nil, &folder)
 	return folder, err
 }
 
@@ -57,7 +59,7 @@ func (s *collectionService) CollectionFolders(ctx context.Context, username stri
 		return nil, ErrInvalidUsername
 	}
 	var collection *CollectionFolders
-	err := request(ctx, s.url+"/"+username+"/collection/folders", nil, &collection)
+	err := s.request(ctx, s.url+"/"+username+"/collection/folders", nil, &collection)
 	return collection, err
 }
 
@@ -119,7 +121,7 @@ func (s *collectionService) CollectionItemsByFolder(ctx context.Context, usernam
 		}
 	}
 	var items *CollectionItems
-	err := request(ctx, s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID)+"/releases", pagination.params(), &items)
+	err := s.request(ctx, s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID)+"/releases", pagination.params(), &items)
 	return items, err
 }
 
@@ -131,6 +133,6 @@ func (s *collectionService) CollectionItemsByRelease(ctx context.Context, userna
 		return nil, ErrInvalidReleaseID
 	}
 	var items *CollectionItems
-	err := request(ctx, s.url+"/"+username+"/collection/releases/"+strconv.Itoa(releaseID), nil, &items)
+	err := s.request(ctx, s.url+"/"+username+"/collection/releases/"+strconv.Itoa(releaseID), nil, &items)
 	return items, err
 }

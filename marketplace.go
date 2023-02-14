@@ -12,6 +12,7 @@ const (
 )
 
 type marketPlaceService struct {
+	request  requestFunc
 	url      string
 	currency string
 }
@@ -25,8 +26,9 @@ type MarketPlaceService interface {
 	ReleaseStatistics(ctx context.Context, releaseID int) (*Stats, error)
 }
 
-func newMarketPlaceService(url string, currency string) MarketPlaceService {
+func newMarketPlaceService(req requestFunc, url string, currency string) MarketPlaceService {
 	return &marketPlaceService{
+		request:  req,
 		url:      url,
 		currency: currency,
 	}
@@ -62,12 +64,12 @@ func (s *marketPlaceService) ReleaseStatistics(ctx context.Context, releaseID in
 	params.Set("curr_abbr", s.currency)
 
 	var stats *Stats
-	err := request(ctx, s.url+releaseStatsURI+strconv.Itoa(releaseID), params, &stats)
+	err := s.request(ctx, s.url+releaseStatsURI+strconv.Itoa(releaseID), params, &stats)
 	return stats, err
 }
 
 func (s *marketPlaceService) PriceSuggestions(ctx context.Context, releaseID int) (*PriceListing, error) {
 	var listings *PriceListing
-	err := request(ctx, s.url+priceSuggestionsURI+strconv.Itoa(releaseID), nil, &listings)
+	err := s.request(ctx, s.url+priceSuggestionsURI+strconv.Itoa(releaseID), nil, &listings)
 	return listings, err
 }

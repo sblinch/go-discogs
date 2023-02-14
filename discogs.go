@@ -40,11 +40,11 @@ type discogs struct {
 	MarketPlaceService
 }
 
-var header *http.Header
+type requestFunc func(ctx context.Context, path string, params url.Values, resp interface{}) error
 
 // New returns a new discogs API client.
 func New(o *Options) (Discogs, error) {
-	header = &http.Header{}
+	header := &http.Header{}
 
 	if o == nil || o.UserAgent == "" {
 		return nil, ErrUserAgentInvalid
@@ -66,11 +66,15 @@ func New(o *Options) (Discogs, error) {
 		o.URL = discogsAPI
 	}
 
+	req := func(ctx context.Context, path string, params url.Values, resp interface{}) error {
+		return request(ctx, header, path, params, resp)
+	}
+
 	return discogs{
-		newCollectionService(o.URL + "/users"),
-		newDatabaseService(o.URL, cur),
-		newSearchService(o.URL + "/database/search"),
-		newMarketPlaceService(o.URL+"/marketplace", cur),
+		newCollectionService(req, o.URL+"/users"),
+		newDatabaseService(req, o.URL, cur),
+		newSearchService(req, o.URL+"/database/search"),
+		newMarketPlaceService(req, o.URL+"/marketplace", cur),
 	}, nil
 }
 
@@ -88,7 +92,7 @@ func currency(c string) (string, error) {
 	}
 }
 
-func request(ctx context.Context, path string, params url.Values, resp interface{}) error {
+func request(ctx context.Context, header *http.Header, path string, params url.Values, resp interface{}) error {
 	r, err := http.NewRequestWithContext(ctx, "GET", path+"?"+params.Encode(), nil)
 	if err != nil {
 		return err

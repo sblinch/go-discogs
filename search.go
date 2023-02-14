@@ -17,12 +17,14 @@ type SearchService interface {
 
 // searchService ...
 type searchService struct {
-	url string
+	request requestFunc
+	url     string
 }
 
-func newSearchService(url string) SearchService {
+func newSearchService(req requestFunc, url string) SearchService {
 	return &searchService{
-		url: url,
+		request: req,
+		url:     url,
 	}
 }
 
@@ -148,6 +150,6 @@ type Result struct {
 
 func (s *searchService) Search(ctx context.Context, req SearchRequest) (*Search, error) {
 	var search *Search
-	err := request(ctx, s.url, req.params(), &search)
+	err := s.request(ctx, s.url, req.params(), &search)
 	return search, err
 }
