@@ -49,7 +49,7 @@ client, err := discogs.New(&discogs.Options{
 
 #### Releases
 ```go
-  release, _ := client.Release(9893847)
+  release, _ := client.Release(context.Background(), 9893847)
   fmt.Println(release.Artists[0].Name, " - ", release.Title) 
   // St. Petersburg Ska-Jazz Review  -  Elephant Riddim
 ```
@@ -87,7 +87,7 @@ type SearchRequest struct {
 
 ```go
   request := discogs.SearchRequest{Artist: "reggaenauts", ReleaseTitle: "river rock", Page: 0, PerPage: 1}
-  search, _ := client.Search(request)
+  search, _ := client.Search(context.Background(), request)
 
   for _, r := range search.Results {
     fmt.Println(r.Title)
@@ -100,19 +100,19 @@ Query a users [collection](https://www.discogs.com/developers#page:user-collecti
 
 ##### Collection Folders
 ```go
-  collection, err := client.CollectionFolders("my_user")
+  collection, err := client.CollectionFolders(context.Background(), "my_user")
 ```
 ##### Folder
 ```go
-  folder, err := client.Folder("my_user", 0)
+  folder, err := client.Folder(context.Background(), "my_user", 0)
 ```
 ##### Collection Items by Folder
 ```go
-  items, err := client.CollectionItemsByFolder("my_user", 0, &Pagination{Sort: "artist", SortOrder: "desc", PerPage: 2})
+  items, err := client.CollectionItemsByFolder(context.Background(), "my_user", 0, &Pagination{Sort: "artist", SortOrder: "desc", PerPage: 2})
 ```
 ##### Collection Items by Release
 ```go
-  items, err := client.CollectionItemsByRelease("my_user", 12934893)
+  items, err := client.CollectionItemsByRelease(context.Background(), "my_user", 12934893)
 ```
 
 #### Marketplace
@@ -124,7 +124,7 @@ Query a user's [marketplace](https://www.discogs.com/developers/#page:marketplac
 Retrieve price suggestions for the provided Release ID
 
 ```go
-  suggestions, err := client.PriceSuggestions(12345)
+  suggestions, err := client.PriceSuggestions(context.Background(), 12345)
 ```
 
 ##### Release Statistics
@@ -132,7 +132,7 @@ Retrieve price suggestions for the provided Release ID
 Retrieve marketplace statistics for the provided Release ID
 
 ```go
-  stats, err := client.ReleaseStatistics(12345)
+  stats, err := client.ReleaseStatistics(context.Background(), 12345)
 ```
 
 ...

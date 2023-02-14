@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 )
@@ -15,21 +16,21 @@ const (
 // DatabaseService is an interface to work with database.
 type DatabaseService interface {
 	// Artist represents a person in the discogs database.
-	Artist(artistID int) (*Artist, error)
+	Artist(ctx context.Context, artistID int) (*Artist, error)
 	// ArtistReleases returns a list of releases and masters associated with the artist.
-	ArtistReleases(artistID int, pagination *Pagination) (*ArtistReleases, error)
+	ArtistReleases(ctx context.Context, artistID int, pagination *Pagination) (*ArtistReleases, error)
 	// Label returns a label.
-	Label(labelID int) (*Label, error)
+	Label(ctx context.Context, labelID int) (*Label, error)
 	// LabelReleases returns a list of Releases associated with the label.
-	LabelReleases(labelID int, pagination *Pagination) (*LabelReleases, error)
+	LabelReleases(ctx context.Context, labelID int, pagination *Pagination) (*LabelReleases, error)
 	// Master returns a master release.
-	Master(masterID int) (*Master, error)
+	Master(ctx context.Context, masterID int) (*Master, error)
 	// MasterVersions retrieves a list of all Releases that are versions of this master.
-	MasterVersions(masterID int, pagination *Pagination) (*MasterVersions, error)
+	MasterVersions(ctx context.Context, masterID int, pagination *Pagination) (*MasterVersions, error)
 	// Release returns release by release's ID.
-	Release(releaseID int) (*Release, error)
+	Release(ctx context.Context, releaseID int) (*Release, error)
 	// ReleaseRating retruns community release rating.
-	ReleaseRating(releaseID int) (*ReleaseRating, error)
+	ReleaseRating(ctx context.Context, releaseID int) (*ReleaseRating, error)
 }
 
 type databaseService struct {
@@ -82,12 +83,12 @@ type Release struct {
 	Year              int            `json:"year"`
 }
 
-func (s *databaseService) Release(releaseID int) (*Release, error) {
+func (s *databaseService) Release(ctx context.Context, releaseID int) (*Release, error) {
 	params := url.Values{}
 	params.Set("curr_abbr", s.currency)
 
 	var release *Release
-	err := request(s.url+releasesURI+strconv.Itoa(releaseID), params, &release)
+	err := request(ctx, s.url+releasesURI+strconv.Itoa(releaseID), params, &release)
 	return release, err
 }
 
@@ -97,9 +98,9 @@ type ReleaseRating struct {
 	Rating Rating `json:"rating"`
 }
 
-func (s *databaseService) ReleaseRating(releaseID int) (*ReleaseRating, error) {
+func (s *databaseService) ReleaseRating(ctx context.Context, releaseID int) (*ReleaseRating, error) {
 	var rating *ReleaseRating
-	err := request(s.url+releasesURI+strconv.Itoa(releaseID)+"/rating", nil, &rating)
+	err := request(ctx, s.url+releasesURI+strconv.Itoa(releaseID)+"/rating", nil, &rating)
 	return rating, err
 }
 
@@ -123,9 +124,9 @@ type Artist struct {
 	DataQuality    string   `json:"data_quality"`
 }
 
-func (s *databaseService) Artist(artistID int) (*Artist, error) {
+func (s *databaseService) Artist(ctx context.Context, artistID int) (*Artist, error) {
 	var artist *Artist
-	err := request(s.url+artistsURI+strconv.Itoa(artistID), nil, &artist)
+	err := request(ctx, s.url+artistsURI+strconv.Itoa(artistID), nil, &artist)
 	return artist, err
 }
 
@@ -135,9 +136,9 @@ type ArtistReleases struct {
 	Releases   []ReleaseSource `json:"releases"`
 }
 
-func (s *databaseService) ArtistReleases(artistID int, pagination *Pagination) (*ArtistReleases, error) {
+func (s *databaseService) ArtistReleases(ctx context.Context, artistID int, pagination *Pagination) (*ArtistReleases, error) {
 	var releases *ArtistReleases
-	err := request(s.url+artistsURI+strconv.Itoa(artistID)+"/releases", pagination.params(), &releases)
+	err := request(ctx, s.url+artistsURI+strconv.Itoa(artistID)+"/releases", pagination.params(), &releases)
 	return releases, err
 }
 
@@ -157,9 +158,9 @@ type Label struct {
 	DataQuality string     `json:"data_quality"`
 }
 
-func (s *databaseService) Label(labelID int) (*Label, error) {
+func (s *databaseService) Label(ctx context.Context, labelID int) (*Label, error) {
 	var label *Label
-	err := request(s.url+labelsURI+strconv.Itoa(labelID), nil, &label)
+	err := request(ctx, s.url+labelsURI+strconv.Itoa(labelID), nil, &label)
 	return label, err
 }
 
@@ -169,9 +170,9 @@ type LabelReleases struct {
 	Releases   []ReleaseSource `json:"releases"`
 }
 
-func (s *databaseService) LabelReleases(labelID int, pagination *Pagination) (*LabelReleases, error) {
+func (s *databaseService) LabelReleases(ctx context.Context, labelID int, pagination *Pagination) (*LabelReleases, error) {
 	var releases *LabelReleases
-	err := request(s.url+labelsURI+strconv.Itoa(labelID)+"/releases", pagination.params(), &releases)
+	err := request(ctx, s.url+labelsURI+strconv.Itoa(labelID)+"/releases", pagination.params(), &releases)
 	return releases, err
 }
 
@@ -201,9 +202,9 @@ type Master struct {
 	DataQuality          string         `json:"data_quality"`
 }
 
-func (s *databaseService) Master(masterID int) (*Master, error) {
+func (s *databaseService) Master(ctx context.Context, masterID int) (*Master, error) {
 	var master *Master
-	err := request(s.url+mastersURI+strconv.Itoa(masterID), nil, &master)
+	err := request(ctx, s.url+mastersURI+strconv.Itoa(masterID), nil, &master)
 	return master, err
 }
 
@@ -213,8 +214,8 @@ type MasterVersions struct {
 	Versions   []Version `json:"versions"`
 }
 
-func (s *databaseService) MasterVersions(masterID int, pagination *Pagination) (*MasterVersions, error) {
+func (s *databaseService) MasterVersions(ctx context.Context, masterID int, pagination *Pagination) (*MasterVersions, error) {
 	var versions *MasterVersions
-	err := request(s.url+mastersURI+strconv.Itoa(masterID)+"/versions", pagination.params(), &versions)
+	err := request(ctx, s.url+mastersURI+strconv.Itoa(masterID)+"/versions", pagination.params(), &versions)
 	return versions, err
 }

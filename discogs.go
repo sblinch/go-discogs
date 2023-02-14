@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -87,8 +88,8 @@ func currency(c string) (string, error) {
 	}
 }
 
-func request(path string, params url.Values, resp interface{}) error {
-	r, err := http.NewRequest("GET", path+"?"+params.Encode(), nil)
+func request(ctx context.Context, path string, params url.Values, resp interface{}) error {
+	r, err := http.NewRequestWithContext(ctx, "GET", path+"?"+params.Encode(), nil)
 	if err != nil {
 		return err
 	}

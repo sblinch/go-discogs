@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -60,7 +61,7 @@ func TestDatabaseServiceRelease(t *testing.T) {
 	defer ts.Close()
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
-	release, err := d.Release(8138518)
+	release, err := d.Release(context.Background(), 8138518)
 	if err != nil {
 		t.Fatalf("failed to get release: %s", err)
 	}
@@ -78,7 +79,7 @@ func TestDatabaseServiceMaster(t *testing.T) {
 	defer ts.Close()
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
-	master, err := d.Master(718441)
+	master, err := d.Master(context.Background(), 718441)
 	if err != nil {
 		t.Fatalf("failed to get master: %s", err)
 	}
@@ -95,7 +96,7 @@ func TestDatabaseServiceArtist(t *testing.T) {
 	defer ts.Close()
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
-	artist, err := d.Artist(38661)
+	artist, err := d.Artist(context.Background(), 38661)
 	if err != nil {
 		t.Fatalf("failed to get master: %s", err)
 	}

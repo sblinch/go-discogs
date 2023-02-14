@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"strconv"
 )
 
@@ -8,15 +9,15 @@ import (
 type CollectionService interface {
 	// Retrieve a list of folders in a user’s collection.
 	// If folder_id is not 0, authentication as the collection owner is required.
-	CollectionFolders(username string) (*CollectionFolders, error)
+	CollectionFolders(ctx context.Context, username string) (*CollectionFolders, error)
 	// Retrieve a list of items in a folder in a user’s collection.
 	// If folderID is not 0, authentication with token is required.
-	CollectionItemsByFolder(username string, folderID int, pagination *Pagination) (*CollectionItems, error)
+	CollectionItemsByFolder(ctx context.Context, username string, folderID int, pagination *Pagination) (*CollectionItems, error)
 	// Retrieve the user’s collection folders which contain a specified release.
 	// The releaseID must be non-zero.
-	CollectionItemsByRelease(username string, releaseID int) (*CollectionItems, error)
+	CollectionItemsByRelease(ctx context.Context, username string, releaseID int) (*CollectionItems, error)
 	// Retrieve metadata about a folder in a user’s collection.
-	Folder(username string, folderID int) (*Folder, error)
+	Folder(ctx context.Context, username string, folderID int) (*Folder, error)
 }
 
 type collectionService struct {
@@ -37,12 +38,12 @@ type Folder struct {
 	ResourceURL string `json:"resource_url"`
 }
 
-func (s *collectionService) Folder(username string, folderID int) (*Folder, error) {
+func (s *collectionService) Folder(ctx context.Context, username string, folderID int) (*Folder, error) {
 	if username == "" {
 		return nil, ErrInvalidUsername
 	}
 	var folder *Folder
-	err := request(s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID), nil, &folder)
+	err := request(ctx, s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID), nil, &folder)
 	return folder, err
 }
 
@@ -51,12 +52,12 @@ type CollectionFolders struct {
 	Folders []Folder `json:"folders"`
 }
 
-func (s *collectionService) CollectionFolders(username string) (*CollectionFolders, error) {
+func (s *collectionService) CollectionFolders(ctx context.Context, username string) (*CollectionFolders, error) {
 	if username == "" {
 		return nil, ErrInvalidUsername
 	}
 	var collection *CollectionFolders
-	err := request(s.url+"/"+username+"/collection/folders", nil, &collection)
+	err := request(ctx, s.url+"/"+username+"/collection/folders", nil, &collection)
 	return collection, err
 }
 
@@ -108,7 +109,7 @@ var validItemsByFolderSort = map[string]struct{}{
 	"year":   struct{}{},
 }
 
-func (s *collectionService) CollectionItemsByFolder(username string, folderID int, pagination *Pagination) (*CollectionItems, error) {
+func (s *collectionService) CollectionItemsByFolder(ctx context.Context, username string, folderID int, pagination *Pagination) (*CollectionItems, error) {
 	if username == "" {
 		return nil, ErrInvalidUsername
 	}
@@ -118,11 +119,11 @@ func (s *collectionService) CollectionItemsByFolder(username string, folderID in
 		}
 	}
 	var items *CollectionItems
-	err := request(s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID)+"/releases", pagination.params(), &items)
+	err := request(ctx, s.url+"/"+username+"/collection/folders/"+strconv.Itoa(folderID)+"/releases", pagination.params(), &items)
 	return items, err
 }
 
-func (s *collectionService) CollectionItemsByRelease(username string, releaseID int) (*CollectionItems, error) {
+func (s *collectionService) CollectionItemsByRelease(ctx context.Context, username string, releaseID int) (*CollectionItems, error) {
 	if username == "" {
 		return nil, ErrInvalidUsername
 	}
@@ -130,6 +131,6 @@ func (s *collectionService) CollectionItemsByRelease(username string, releaseID 
 		return nil, ErrInvalidReleaseID
 	}
 	var items *CollectionItems
-	err := request(s.url+"/"+username+"/collection/releases/"+strconv.Itoa(releaseID), nil, &items)
+	err := request(ctx, s.url+"/"+username+"/collection/releases/"+strconv.Itoa(releaseID), nil, &items)
 	return items, err
 }

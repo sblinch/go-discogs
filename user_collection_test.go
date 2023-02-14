@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -54,7 +55,7 @@ func TestCollectionServiceFolder(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	folder, err := d.Folder(testUsername, 0)
+	folder, err := d.Folder(context.Background(), testUsername, 0)
 	if err != nil {
 		t.Fatalf("failed to get folder: %s", err)
 	}
@@ -73,7 +74,7 @@ func TestCollectionServiceCollectionFolders(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	collection, err := d.CollectionFolders(testUsername)
+	collection, err := d.CollectionFolders(context.Background(), testUsername)
 	if err != nil {
 		t.Fatalf("failed to get collection: %s", err)
 	}
@@ -92,7 +93,7 @@ func TestCollectionServiceCollectionItemsByFolder(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	items, err := d.CollectionItemsByFolder(testUsername, 0, &Pagination{Sort: "artist", SortOrder: "desc", PerPage: 2})
+	items, err := d.CollectionItemsByFolder(context.Background(), testUsername, 0, &Pagination{Sort: "artist", SortOrder: "desc", PerPage: 2})
 
 	if err != nil {
 		t.Fatalf("failed to get collection items: %s", err)
@@ -112,7 +113,7 @@ func TestCollectionServiceCollectionItemsByFolderError(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	_, err := d.CollectionItemsByFolder(testUsername, 0, &Pagination{Sort: "invalid"})
+	_, err := d.CollectionItemsByFolder(context.Background(), testUsername, 0, &Pagination{Sort: "invalid"})
 	if err != ErrInvalidSortKey {
 		t.Fatalf("err got=%s; want=%s", err, ErrInvalidSortKey)
 	}
@@ -124,7 +125,7 @@ func TestCollectionServiceCollectionItemsByRelease(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	items, err := d.CollectionItemsByRelease(testUsername, 12934893)
+	items, err := d.CollectionItemsByRelease(context.Background(), testUsername, 12934893)
 
 	if err != nil {
 		t.Fatalf("failed to get collection items: %s", err)
@@ -165,7 +166,7 @@ func TestCollectionServiceCollectionItemsByReleaseErrors(t *testing.T) {
 	for name, tc := range testCases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			_, err := d.CollectionItemsByRelease(tc.username, tc.releaseID)
+			_, err := d.CollectionItemsByRelease(context.Background(), tc.username, tc.releaseID)
 			if err != tc.err {
 				t.Fatalf("err got=%s; want=%s", err, tc.err)
 			}

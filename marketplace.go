@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 )
@@ -18,10 +19,10 @@ type marketPlaceService struct {
 type MarketPlaceService interface {
 	// The best price suggestions according to grading
 	// Authentication is required.
-	PriceSuggestions(releaseID int) (*PriceListing, error)
+	PriceSuggestions(ctx context.Context, releaseID int) (*PriceListing, error)
 	// Short summary of marketplace listings
 	// Authentication is optional.
-	ReleaseStatistics(releaseID int) (*Stats, error)
+	ReleaseStatistics(ctx context.Context, releaseID int) (*Stats, error)
 }
 
 func newMarketPlaceService(url string, currency string) MarketPlaceService {
@@ -56,17 +57,17 @@ type Stats struct {
 	Blocked     bool     `json:"blocked_from_sale"`
 }
 
-func (s *marketPlaceService) ReleaseStatistics(releaseID int) (*Stats, error) {
+func (s *marketPlaceService) ReleaseStatistics(ctx context.Context, releaseID int) (*Stats, error) {
 	params := url.Values{}
 	params.Set("curr_abbr", s.currency)
 
 	var stats *Stats
-	err := request(s.url+releaseStatsURI+strconv.Itoa(releaseID), params, &stats)
+	err := request(ctx, s.url+releaseStatsURI+strconv.Itoa(releaseID), params, &stats)
 	return stats, err
 }
 
-func (s *marketPlaceService) PriceSuggestions(releaseID int) (*PriceListing, error) {
+func (s *marketPlaceService) PriceSuggestions(ctx context.Context, releaseID int) (*PriceListing, error) {
 	var listings *PriceListing
-	err := request(s.url+priceSuggestionsURI+strconv.Itoa(releaseID), nil, &listings)
+	err := request(ctx, s.url+priceSuggestionsURI+strconv.Itoa(releaseID), nil, &listings)
 	return listings, err
 }

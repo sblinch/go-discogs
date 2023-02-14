@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 )
@@ -11,7 +12,7 @@ type SearchService interface {
 	// Issue a search query to database. This endpoint accepts pagination parameters.
 	// Authentication (as any user) is required.
 	// https://www.discogs.com/developers/#page:database,header:database-search
-	Search(req SearchRequest) (*Search, error)
+	Search(ctx context.Context, req SearchRequest) (*Search, error)
 }
 
 // searchService ...
@@ -145,8 +146,8 @@ type Result struct {
 	MasterID    int       `json:"master_id,omitempty"`
 }
 
-func (s *searchService) Search(req SearchRequest) (*Search, error) {
+func (s *searchService) Search(ctx context.Context, req SearchRequest) (*Search, error) {
 	var search *Search
-	err := request(s.url, req.params(), &search)
+	err := request(ctx, s.url, req.params(), &search)
 	return search, err
 }

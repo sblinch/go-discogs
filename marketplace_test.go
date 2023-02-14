@@ -1,6 +1,7 @@
 package discogs
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -43,7 +44,7 @@ func TestMarketplacePriceSuggestions(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	suggestion, err := d.PriceSuggestions(testReleaseID)
+	suggestion, err := d.PriceSuggestions(context.Background(), testReleaseID)
 	if err != nil {
 		t.Fatalf("failed to get price suggestion: %s", err)
 	}
@@ -62,7 +63,7 @@ func TestMarketplaceReleaseStatistics(t *testing.T) {
 
 	d := initDiscogsClient(t, &Options{URL: ts.URL})
 
-	stats, err := d.ReleaseStatistics(testReleaseID)
+	stats, err := d.ReleaseStatistics(context.Background(), testReleaseID)
 	if err != nil {
 		t.Fatalf("failed to get price suggestion: %s", err)
 	}
