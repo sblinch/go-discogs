@@ -87,3 +87,8 @@ func (r *RateLimit) call(ctx context.Context, f func() error, sleep func(context
 		first = false
 	}
 }
+
+// Client returns a wrapper around the provided client that applies rate limiting (using r) to all network requests.
+func (r *RateLimit) Client(client Discogs) Discogs {
+	return RateLimited(client, r)
+}
